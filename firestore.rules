@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: surveyResponses
+    // Document ID: {responseId} (matches user uid)
+    // Fields:
+    //   - forgiveMe: string (optional)
+    //   - proposalAnswer: string (optional)
+    //   - createdAt: timestamp (required)
+    //   - uid: string (required)
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidSurveyResponse() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['uid', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.createdAt is timestamp &&
+             (!('forgiveMe' in data) || data.forgiveMe is string) &&
+             (!('proposalAnswer' in data) || data.proposalAnswer is string);
+    }
+
+    match /surveyResponses/{responseId} {
+      allow create: if isAuthenticated() && isValidSurveyResponse() && request.resource.data.uid == responseId;
+      allow update: if isOwner(resource.data.uid) && isValidSurveyResponse() && request.resource.data.createdAt == resource.data.createdAt;
+      allow read: if isOwner(resource.data.uid);
+    }
+  }
+}

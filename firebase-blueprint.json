@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "SurveyResponse": {
+      "title": "SurveyResponse",
+      "description": "A response to the proposal survey",
+      "type": "object",
+      "properties": {
+        "forgiveMe": {
+          "type": "string",
+          "description": "The answer to the forgive me question"
+        },
+        "proposalAnswer": {
+          "type": "string",
+          "description": "The answer to the final proposal"
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "description": "When the response was submitted"
+        },
+        "uid": {
+          "type": "string",
+          "description": "The anonymous user ID of the respondent"
+        }
+      },
+      "required": ["uid", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/surveyResponses/{responseId}": {
+      "schema": {
+        "$ref": "#/entities/SurveyResponse"
+      },
+      "description": "Stores the survey responses from the proposal app"
+    }
+  }
+}
